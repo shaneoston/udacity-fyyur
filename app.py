@@ -8,11 +8,13 @@ import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 
-from config import SQLALCHEMY_DATABASE_URI
+
 from forms import *
 #----------------------------------------------------------------------------#
 # App Config.
@@ -23,8 +25,7 @@ moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 
-# TODO: connect to a local postgresql database
-app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
@@ -43,6 +44,7 @@ class Venue(db.Model):
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
+
 class Artist(db.Model):
     __tablename__ = 'Artist'
 
@@ -56,8 +58,11 @@ class Artist(db.Model):
     facebook_link = db.Column(db.String(120))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # website_link = db.Column(db.String(120))
+    # seeking_venue = db.Column(db.Boolean)
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+# class Show(db.Model):
 
 #----------------------------------------------------------------------------#
 # Filters.
