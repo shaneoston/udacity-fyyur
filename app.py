@@ -45,6 +45,7 @@ class Venue(db.Model):
     website_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(255))
+    shows = db.relationship('Show', backref='venue')
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -67,8 +68,9 @@ class Show(db.Model):
 
   id = db.Column(db.Integer, primary_key=True)
   artist_id = db.Column(db.Integer)
-  venue_id = db.Column(db.Integer)
+  # venue_id = db.Column(db.Integer)
   start_time = db.Column(db.DateTime)
+  venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
 
 
 #----------------------------------------------------------------------------#
