@@ -49,6 +49,9 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String(255))
     shows = db.relationship('Show', backref='venue')
 
+    def __repr__(self):
+        return f'<Venue {self.id} name: {self.name}>'
+
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -107,30 +110,33 @@ def index():
 
 @app.route('/venues')
 def venues():
-    # TODO: replace with real venues data.
-    #       num_shows should be aggregated based on number of upcoming shows per venue.
-    data = [{
-        "city": "San Francisco",
-        "state": "CA",
-        "venues": [{
-            "id": 1,
-            "name": "The Musical Hop",
-            "num_upcoming_shows": 0,
-        }, {
-            "id": 3,
-            "name": "Park Square Live Music & Coffee",
-            "num_upcoming_shows": 1,
-        }]
-    }, {
-        "city": "New York",
-        "state": "NY",
-        "venues": [{
-            "id": 2,
-            "name": "The Dueling Pianos Bar",
-            "num_upcoming_shows": 0,
-        }]
-    }]
-    return render_template('pages/venues.html', areas=data);
+    venues_by_city = [];
+
+    venues = Venue.query.all()
+
+    venue_cities = set()
+
+    for venue in venues:
+        venue_cities.add((venue.city, venue.state))
+
+    for city in venue_cities:
+        venues_by_city.append({
+            "city":  city[0],
+            "state": city[1],
+            "venues": []
+        })
+
+    for venue in venues:
+        # TODO add upcoming shows
+        for location in venues_by_city:
+            if venue.city == location['city'] and venue.state == location['state']:
+                location['venues'].append({
+                    'id': venue.id,
+                    'name': venue.name
+                })
+
+
+    return render_template('pages/venues.html', areas=venues_by_city);
 
 
 @app.route('/venues/search', methods=['POST'])
