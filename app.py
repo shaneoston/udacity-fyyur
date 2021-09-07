@@ -155,56 +155,57 @@ def create_venue_submission():
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
     try:
-        venue = Venue.query.filter_by(venue_id).one()
-        Venue.query.filter_by(venue_id).delete()
+        venue = Venue.query.get(venue_id)
+        venue_name = venue.name
+
+        db.session.delete(venue)
         db.session.commit()
 
-        flash('Venue ' + venue.name + ' was successfully deleted.')
+        flash('Venue ' + venue_name + ' was successfully deleted.')
     except:
+        flash('An error occurred. Venue ' + venue_name +  ' was not deleted.')
         db.session.rollback()
-
-        flash('An error occurred. Venue  could not be listed.')
     finally:
         db.session.close()
-    # TODO: Complete this endpoint for taking a venue_id, and using
-    # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
 
-    # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-    # clicking that button delete it from the db then redirect the user to the homepage
-    return print('done')
+    return redirect(url_for('index'))
 
 
 #  Artists
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-    # TODO: replace with real data returned from querying the database
-    data = [{
-        "id": 4,
-        "name": "Guns N Petals",
-    }, {
-        "id": 5,
-        "name": "Matt Quevedo",
-    }, {
-        "id": 6,
-        "name": "The Wild Sax Band",
-    }]
+    data = []
+
+    artists = Artist.query.all()
+
+    for artist in artists:
+        data.append({
+            'id': artist.id,
+            'name': artist.name
+        })
+
     return render_template('pages/artists.html', artists=data)
 
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-    # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-    # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
-    # search for "band" should return "The Wild Sax Band".
+    search_term = request.form.get('search_term', '')
+    search_result = Artist.query.filter(Artist.name.ilike(f'%{search_term}%'))
+
     response = {
-        "count": 1,
-        "data": [{
-            "id": 4,
-            "name": "Guns N Petals",
-            "num_upcoming_shows": 0,
-        }]
+        "count": search_result.count(),
+        "data": search_result
     }
+    # TODO: add num_upcoming_shows
+    # response = {
+    #     "count": 1,
+    #     "data": [{
+    #         "id": 4,
+    #         "name": "Guns N Petals",
+    #         "num_upcoming_shows": 0,
+    #     }]
+
     return render_template('pages/search_artists.html', results=response,
                            search_term=request.form.get('search_term', ''))
 
@@ -357,14 +358,32 @@ def create_artist_form():
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-    # called upon submitting the new artist listing form
-    # TODO: insert form data as a new Venue record in the db, instead
+    try:
+        form = ArtistForm()
+
+        artist = Artist(
+            name=form.name.data,
+            city=form.city.data,
+            state=form.state.data,
+            phone=form.phone.data,
+            genres=form.genres.data,
+            image_link=form.image_link.data,
+            facebook_link=form.facebook_link.data
+        )
+
+        db.session.add(artist)
+        db.session.commit()
+        print(artist)
+
+        flash('Artist ' + request.form['name'] + ' was successfully listed!')
+    except:
+        db.session.rollback()
+        flash('An error occurred. Artist ' + request.form['name']  + ' could not be listed.')
+    finally:
+        db.session.close()
+
     # TODO: modify data to be the data object returned from db insertion
 
-    # on successful db insert, flash success
-    flash('Artist ' + request.form['name'] + ' was successfully listed!')
-    # TODO: on unsuccessful db insert, flash an error instead.
-    # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
     return render_template('pages/home.html')
 
 
